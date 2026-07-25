@@ -14,12 +14,14 @@
 #include <net/if.h>
 #include <ifaddrs.h>
 #include <stdbool.h>
+#include <linux/if_ether.h>
+#include <linux/if_packet.h>
+#include <net/ethernet.h>
 
 typedef struct s_malcolm {
-	struct sockaddr_in *source_ip;
-	struct sockaddr_in *target_ip;
-	struct sockaddr_ll *source_mac;
-	struct sockaddr_ll *target_mac;
+	const char *itrf;
+	struct in_addr *ips[2];
+	struct ether_addr *macs[2];
 } t_malcolm;
 
 void init_malcolm(t_malcolm *m);
