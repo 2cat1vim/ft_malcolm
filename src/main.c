@@ -41,12 +41,12 @@ main(int ac, char** av)
 		exit(1);
 	}
 	signal(SIGINT, handle_sigint);
-	malcolm_header();
 
 	t_malcolm m;
 	if (!parse_point(&m, av))
 		exit(1);
 
+	malcolm_header();
 	while (Running) {
 		;
 	}
