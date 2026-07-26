@@ -18,13 +18,15 @@
 #include <linux/if_packet.h>
 #include <net/ethernet.h>
 
+#include "../lib/lib.h"
+
 typedef struct s_malcolm {
-	const char *itrf;
-	struct in_addr *ips[2];
-	struct ether_addr *macs[2];
+	char *itrf;
+	struct in_addr ips[2];
+	struct ether_addr macs[2];
 } t_malcolm;
 
 void init_malcolm(t_malcolm *m);
+void free_malcolm(void *s_);
 bool parse_point(t_malcolm *m, char **av);
-
 #endif

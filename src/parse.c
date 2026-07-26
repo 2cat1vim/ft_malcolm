@@ -54,20 +54,16 @@ mac_pton(const char* src, struct ether_addr *dst) {
 static enum P_Answer
 resolve_ips(t_malcolm *m, char **av)
 {
-	(void)m;
-	char *interface = NULL;
 	struct ifaddrs *ifaddr;
-	struct in_addr ips[2];
-	struct ether_addr macs[2];
 	bool match[4] = {false, false, false, false};
 
-	if (inet_pton(AF_INET, av[SOURCE_IP + 1], &ips[SOURCE]) != 1)
+	if (inet_pton(AF_INET, av[SOURCE_IP + 1], &m->ips[SOURCE]) != 1)
 		return (SourceIPBad);
-	if (inet_pton(AF_INET, av[TARGET_IP + 1], &ips[TARGET]) != 1)
+	if (inet_pton(AF_INET, av[TARGET_IP + 1], &m->ips[TARGET]) != 1)
 		return (TargetIPBad);
-	if (mac_pton(av[SOURCE_MAC + 1], &macs[SOURCE]) != 1)
+	if (mac_pton(av[SOURCE_MAC + 1], &m->macs[SOURCE]) != 1)
 		return (SourceMACBad);
-	if (mac_pton(av[TARGET_MAC + 1], &macs[TARGET]) != 1)
+	if (mac_pton(av[TARGET_MAC + 1], &m->macs[TARGET]) != 1)
 		return (TargetMACBad);
 
 	if (getifaddrs(&ifaddr) == -1) // Create linked list of ifaddrs
@@ -79,20 +75,20 @@ resolve_ips(t_malcolm *m, char **av)
 	
         	if (ifa->ifa_addr->sa_family == AF_PACKET) {
             		struct sockaddr_ll *sll = (struct sockaddr_ll *)ifa->ifa_addr;
-            		if (memcmp(sll->sll_addr, &macs[SOURCE], ETH_ALEN) == 0)	
+            		if (memcmp(sll->sll_addr, &m->macs[SOURCE], ETH_ALEN) == 0)	
                 		match[SOURCE_MAC] = true;
-            		if (memcmp(sll->sll_addr, &macs[TARGET], ETH_ALEN) == 0)
+            		if (memcmp(sll->sll_addr, &m->macs[TARGET], ETH_ALEN) == 0)
                 		match[TARGET_MAC] = true;
 		}
 
 		if (ifa->ifa_addr->sa_family == AF_INET) {
 
 			struct in_addr addr = ((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
-			if (addr.s_addr == ips[SOURCE].s_addr) {
-				interface = ifa->ifa_name;
+			if (addr.s_addr == m->ips[SOURCE].s_addr) {
+				m->itrf = strdup(ifa->ifa_name);
 				match[SOURCE_IP] = true;
 			}
-			if (addr.s_addr == ips[TARGET].s_addr)
+			if (addr.s_addr == m->ips[TARGET].s_addr)
 				match[TARGET_IP] = true;
 		}
 	}
@@ -101,10 +97,6 @@ resolve_ips(t_malcolm *m, char **av)
 		if (!match[error_code])
 			return ((enum P_Answer)error_code);
 	}
-
-	if (interface)
-		printf("Found available interface: %s\n", interface);
-
 	freeifaddrs(ifaddr);
 	return (Good);
 }

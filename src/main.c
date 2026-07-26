@@ -9,8 +9,8 @@ handle_sigint(int sig) {
 	Running = 0;
 }
 
-static
-void malcolm_header(void) {
+static void
+malcolm_header(void) {
     printf("\033[34m ▄▄▄· ▄▄▄   ▄▄▄·           \n");
     printf("▐█ ▀█ ▀▄ █·▐█ ▄█           \n");
     printf("▄█▀▀█ ▐▀▀▄  ██▀·           \n");
@@ -23,32 +23,37 @@ void malcolm_header(void) {
     printf(" ▀▀▀▀ .▀    ▀█▄▀▪ ▀█▄▀▪▀▀▀ \n\033[0m\n");
 }
 
-
 int
 main(int ac, char** av)
 {
 	(void)av;
-	if (geteuid() != 0) {
-		fprintf(stderr, "ft_malcolm: You must run this program as root\n");
-		exit(1);
-	}
+	if (geteuid() != 0)
+		ep_exit("Require euid to 0 (root)");
 	if (ac != 5) {
-		fprintf(stderr, "ft_malcolm: format:\nsudo %s\n"
+		ep_exit("format:\nsudo ./ft_malcolm\n"
 			       	"	[source-ip]\n"
 			       	"	[source-mac-addr]\n"
 			       	"	[target-ip]\n"
-			       	"	[target-mac-addr]\n\n[!]: it must be in this exact order.\n", av[0]);
-		exit(1);
+			       	"	[target-mac-addr]\n\n[!]: it must be in this exact order");
 	}
+
 	signal(SIGINT, handle_sigint);
 
-	t_malcolm m;
-	if (!parse_point(&m, av))
-		exit(1);
+	t_malcolm *m = malloc((sizeof(t_malcolm) * 1));
+	if (!m)
+		ep_exit("t_malcolm allocation failed");
+
+	init_malcolm(m);
+	if (!parse_point(m, av))
+		ffe_exit(free_malcolm, m);
 
 	malcolm_header();
+
+	if (m->itrf)
+		printf("[malcolm]: found interface: %s\n", m->itrf);
+
 	while (Running) {
 		;
 	}
-	return (0);
+	ffe_exit(free_malcolm, m);
 }
