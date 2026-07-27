@@ -4,6 +4,9 @@
 #define TARGET 1
 #define IPV4_L 4
 #define MAC_L 6
+#define ERR -1
+#define BAD 1
+#define GOOD 0
 
 int
 crt_sock(t_malcolm *m) {
@@ -16,33 +19,52 @@ crt_sock(t_malcolm *m) {
 	return (fd);
 }
 
-int
+void
 wfor_arp(t_malcolm *m) {
 	unsigned char buf[42];
 	struct sockaddr_ll from;
 	socklen_t lenfrom = sizeof(from);
 	ssize_t r = recvfrom(m->fd, buf, sizeof(buf), 0, (struct sockaddr*)&from, &lenfrom);
 	if (r < 0)
-		return (-1);
+		return;
 	t_ether_hdr *eth = (t_ether_hdr *)buf;
 	t_arp_hdr *arp = (t_arp_hdr*)(buf + sizeof(t_ether_hdr));
 	if (ntohs(arp->op) == ARPOP_REQUEST && ntohs(eth->type) == ETH_P_ARP) {
 		if (cmp_mem(arp->spa, &m->trg_ip, IPV4_L) != 0)
-			return (1);
+			return;
 		if (cmp_mem(arp->sha, &m->trg_mac, MAC_L) != 0)
-			return (1);
+			return;
+		if (cmp_mem(arp->tpa, &m->src_ip, IPV4_L) != 0)
+			return;
 		printf("[🏷️ ]: An ARP request has been broadcast.\n"
-			"	mac address of request: %02x:%02x:%02x:%02x:%02x:%02x\n"
+			"	MAC address of request: %02x:%02x:%02x:%02x:%02x:%02x\n"
 			"	IP address of request: %hhu.%hhu.%hhu.%hhu\n",
 				arp->sha[0], arp->sha[1], arp->sha[2], 
 				arp->sha[3], arp->sha[4], arp->sha[5],
 				arp->spa[0], arp->spa[1], arp->spa[2],
 				arp->spa[3]);
-		return (0);
+		sto_arp(m, buf, from, lenfrom);
+		ffs_exit(free_malcolm, m);
 	}
-	return (1);
+	return;
 }
 
-void sto_arp(t_malcolm *m) {
-	(void)m;
+void sto_arp(t_malcolm *m, unsigned char* buf, struct sockaddr_ll from, socklen_t lenfrom) {
+	
+	t_ether_hdr *eth = (t_ether_hdr *)buf;
+	cpy_mem(eth->dmac, m->trg_mac, MAC_L);
+	cpy_mem(eth->smac, m->src_mac, MAC_L);
+	eth->type = htons(ETH_P_ARP);
+
+	t_arp_hdr *arp = (t_arp_hdr*)(buf + sizeof(t_ether_hdr));
+	cpy_mem(arp->sha, m->src_mac, MAC_L);
+	arp->op = htons(ARPOP_REQUEST);
+	arp->pln = IPV4_L;
+	arp->hln = MAC_L;
+	arp->pro = htons(0x0800);
+	arp->hrd = htons(1);
+
+	ssize_t r = sendto(m->fd, buf, sizeof(buf), 0, (struct sockaddr*)&from, lenfrom);
+	if (r < 0)
+		f_exit(1, free_malcolm, m, strerror(errno));
 }

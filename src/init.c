@@ -10,6 +10,7 @@ init_malcolm(t_malcolm *m) {
 	zro_mem(m->src_mac, MAC_L);
 	zro_mem(m->trg_mac, MAC_L);
 	m->itrf = NULL;
+	m->fd = -1;
 	return ;
 }
 
@@ -21,6 +22,8 @@ free_malcolm(void *s_) {
 	if (m) {
 		if (m->itrf)
 			free(m->itrf);
+		if (m->fd != -1)
+			close(m->fd);
 		free(m);
 	}
 }
