@@ -64,12 +64,16 @@ resolve_ips(t_malcolm *m, char **av)
 
 	if (inet_pton(AF_INET, av[SOURCE_IP + 1], &m->src_ip) != 1)
 		return (SourceIPBad);
-	if (inet_pton(AF_INET, av[TARGET_IP + 1], &m->trg_ip) != 1)
+	if (inet_pton(AF_INET, av[TARGET_IP + 1], &m->trg_ip) != 1) {
+		match[TARGET_IP] = true;
 		return (TargetIPBad);
+	}
 	if (mac_pton(av[SOURCE_MAC + 1], m->src_mac) != 1)
 		return (SourceMACBad);
-	if (mac_pton(av[TARGET_MAC + 1], m->trg_mac) != 1)
+	if (mac_pton(av[TARGET_MAC + 1], m->trg_mac) != 1) {
+		match[TARGET_MAC] = true;
 		return (TargetMACBad);
+	}
 
 	if (getifaddrs(&ifaddr) == -1) // Create linked list of ifaddrs
 		return (NetworkBad);
@@ -82,8 +86,6 @@ resolve_ips(t_malcolm *m, char **av)
             		struct sockaddr_ll *sll = (struct sockaddr_ll *)ifa->ifa_addr;
             		if (cmp_mem(&sll->sll_addr, m->src_mac, MAC_L) == 0)	
                 		match[SOURCE_MAC] = true;
-            		if (cmp_mem(&sll->sll_addr, m->trg_mac, MAC_L) == 0)
-                		match[TARGET_MAC] = true;
 		}
 
 		if (ifa->ifa_addr->sa_family == AF_INET) {
@@ -92,8 +94,6 @@ resolve_ips(t_malcolm *m, char **av)
 				m->itrf = s_dup(ifa->ifa_name);
 				match[SOURCE_IP] = true;
 			}
-			if (cmp_mem(&sin->sin_addr, m->trg_ip, IPV4_L) == 0)
-				match[TARGET_IP] = true;
 		}
 	}
 
