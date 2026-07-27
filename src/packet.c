@@ -78,9 +78,15 @@ void sto_arp(t_malcolm *m, t_arp_hdr *old_arp) {
 	from.sll_halen = MAC_L;
 	cpy_mem(from.sll_addr, eth->dmac, MAC_L); 
 	socklen_t lenfrom = sizeof(from);
-
+	printf("SENDING: dmac=%02x:%02x:%02x:%02x:%02x:%02x op=%d spa=%d.%d.%d.%d tpa=%d.%d.%d.%d ifindex=%d len=%zu\n",
+		eth->dmac[0], eth->dmac[1], eth->dmac[2], eth->dmac[3], eth->dmac[4], eth->dmac[5],
+		ntohs(arp->op),
+		arp->spa[0], arp->spa[1], arp->spa[2], arp->spa[3],
+		arp->tpa[0], arp->tpa[1], arp->tpa[2], arp->tpa[3],
+		from.sll_ifindex, sizeof(new_buf));
 
 	ssize_t r = sendto(m->fd, new_buf, sizeof(new_buf), 0, (struct sockaddr*)&from, lenfrom);
+	printf("sendto ret=%zd errno=%s\n", r, strerror(errno));
 	if (r < 0)
 		f_exit(1, free_malcolm, m, strerror(errno));
 	f_exit(0, free_malcolm, m, "packet sent");
