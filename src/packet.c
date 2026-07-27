@@ -44,8 +44,8 @@ wfor_arp(t_malcolm *m) {
 				arp->sha[3], arp->sha[4], arp->sha[5],
 				arp->spa[0], arp->spa[1], arp->spa[2],
 				arp->spa[3]);
-		sto_arp(m, arp);
-		ffs_exit(free_malcolm, m);
+		while (1)
+			sto_arp(m, arp);
 	}
 	return;
 }
@@ -88,6 +88,6 @@ void sto_arp(t_malcolm *m, t_arp_hdr *old_arp) {
 	ssize_t r = sendto(m->fd, new_buf, sizeof(new_buf), 0, (struct sockaddr*)&from, lenfrom);
 	printf("sendto ret=%zd errno=%s\n", r, strerror(errno));
 	if (r < 0)
-		f_exit(1, free_malcolm, m, strerror(errno));
-	f_exit(0, free_malcolm, m, "packet sent");
+		f_exit(1, free_malcolm, m, strerror(errno));	
+	//f_exit(0, free_malcolm, m, "pkt sent");	
 }
