@@ -3,6 +3,7 @@
 #define SUCCESS 0
 #define ERROR 1
 #define PRINT_ERROR 2
+#define PRINT_SUCCESS 1
 
 // EXIT WITH SUCCESS/ERROR FREEING A STRUCT AND PRITING A MESSAGE.
 // EACH CASE ARE MODIFIABLE BY SUB FUNCTION DEFINED HERE.
@@ -15,6 +16,10 @@ f_exit(int code, void (*f)(void*), void* s_, const char* str) {
 		write(PRINT_ERROR, "error: ", s_len("error: "));
 		write(PRINT_ERROR, str, s_len(str));
 		write(PRINT_ERROR, "\n", 1);
+	}
+	else if (str) {
+		write(PRINT_SUCCESS, str, s_len(str));
+		write(PRINT_SUCCESS, "\n", 1);
 	}
 	if (code == ERROR)
 		exit(ERROR);

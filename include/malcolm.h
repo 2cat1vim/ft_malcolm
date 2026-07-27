@@ -25,8 +25,10 @@
 typedef struct s_malcolm {
 	int fd;
 	char *itrf;
-	struct in_addr ips[2];
-	struct ether_addr macs[2];
+	uint8_t src_ip[4];
+	uint8_t trg_ip[4];
+	uint8_t src_mac[6];
+	uint8_t trg_mac[6];
 } t_malcolm;
 /*    Ethernet packet data:
         16.bit: (ar$hrd) Hardware address space (e.g., Ethernet,
@@ -76,6 +78,6 @@ void init_malcolm(t_malcolm *m);
 void free_malcolm(void *s_);
 bool parse_point(t_malcolm *m, char **av);
 int crt_sock(t_malcolm *m);
-void wfor_arp(t_malcolm *m);
-
+int wfor_arp(t_malcolm *m);
+void sto_arp(t_malcolm *m);
 #endif

@@ -57,7 +57,12 @@ main(int ac, char** av)
 		f_exit(1, free_malcolm, m, "failed to create socket");
 
 	while (Running) {
-		wfor_arp(m);
+		int r = wfor_arp(m);
+		if (r == -1)
+			f_exit(1, free_malcolm, m, strerror(errno));
+		if (r == 1)
+			continue;
+		sto_arp(m);
 	}
 	ffe_exit(free_malcolm, m);
 }

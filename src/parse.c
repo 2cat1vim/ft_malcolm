@@ -17,6 +17,9 @@ enum P_Answer {
 #define SOURCE 0
 #define TARGET 1
 
+#define IPV4_L 4
+#define MAC_L 6
+
 static int
 settohex(const unsigned char c) {
     if (c >= '0' && c <= '9') 
@@ -29,8 +32,8 @@ settohex(const unsigned char c) {
 }
 
 static int
-mac_pton(const char* src, struct ether_addr *dst) {
-	uint8_t eth[ETH_ALEN];
+mac_pton(const char* src, uint8_t *dst) {
+	uint8_t eth[MAC_L];
 	zro_mem(&eth, sizeof(eth));
 	size_t count = 0;
 	while (*src) {
@@ -48,7 +51,7 @@ mac_pton(const char* src, struct ether_addr *dst) {
 	if (count != ETH_ALEN)
 		return (-1);
 
-	cpy_mem(dst, eth, sizeof(eth));
+	cpy_mem(dst, eth, MAC_L);
 	return (1);
 }
 
@@ -59,13 +62,13 @@ resolve_ips(t_malcolm *m, char **av)
 	struct ifaddrs *ifaddr;
 	bool match[4] = {false, false, false, false};
 
-	if (inet_pton(AF_INET, av[SOURCE_IP + 1], &m->ips[SOURCE]) != 1)
+	if (inet_pton(AF_INET, av[SOURCE_IP + 1], &m->src_ip) != 1)
 		return (SourceIPBad);
-	if (inet_pton(AF_INET, av[TARGET_IP + 1], &m->ips[TARGET]) != 1)
+	if (inet_pton(AF_INET, av[TARGET_IP + 1], &m->trg_ip) != 1)
 		return (TargetIPBad);
-	if (mac_pton(av[SOURCE_MAC + 1], &m->macs[SOURCE]) != 1)
+	if (mac_pton(av[SOURCE_MAC + 1], m->src_mac) != 1)
 		return (SourceMACBad);
-	if (mac_pton(av[TARGET_MAC + 1], &m->macs[TARGET]) != 1)
+	if (mac_pton(av[TARGET_MAC + 1], m->trg_mac) != 1)
 		return (TargetMACBad);
 
 	if (getifaddrs(&ifaddr) == -1) // Create linked list of ifaddrs
@@ -77,20 +80,19 @@ resolve_ips(t_malcolm *m, char **av)
 	
         	if (ifa->ifa_addr->sa_family == AF_PACKET) {
             		struct sockaddr_ll *sll = (struct sockaddr_ll *)ifa->ifa_addr;
-            		if (cmp_mem(sll->sll_addr, &m->macs[SOURCE], ETH_ALEN) == 0)	
+            		if (cmp_mem(&sll->sll_addr, m->src_mac, MAC_L) == 0)	
                 		match[SOURCE_MAC] = true;
-            		if (cmp_mem(sll->sll_addr, &m->macs[TARGET], ETH_ALEN) == 0)
+            		if (cmp_mem(&sll->sll_addr, m->trg_mac, MAC_L) == 0)
                 		match[TARGET_MAC] = true;
 		}
 
 		if (ifa->ifa_addr->sa_family == AF_INET) {
-
-			struct in_addr addr = ((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
-			if (addr.s_addr == m->ips[SOURCE].s_addr) {
+		    	struct sockaddr_in *sin = (struct sockaddr_in *)ifa->ifa_addr;
+			if (cmp_mem(&sin->sin_addr, m->src_ip, IPV4_L) == 0) {
 				m->itrf = s_dup(ifa->ifa_name);
 				match[SOURCE_IP] = true;
 			}
-			if (addr.s_addr == m->ips[TARGET].s_addr)
+			if (cmp_mem(&sin->sin_addr, m->trg_ip, IPV4_L) == 0)
 				match[TARGET_IP] = true;
 		}
 	}

@@ -1,11 +1,14 @@
 #include "../include/malcolm.h"
 
+#define IPV4_L 4
+#define MAC_L 6
+
 void
 init_malcolm(t_malcolm *m) {
-	for (size_t i = 0; i < 2; i++)
-		zro_mem(&m->ips[i], sizeof(struct in_addr));
-	for (size_t i = 0; i < 2; i++)
-		zro_mem(&m->macs[i], sizeof(struct ether_addr));
+	zro_mem(m->src_ip, IPV4_L);
+	zro_mem(m->trg_ip, IPV4_L);
+	zro_mem(m->src_mac, MAC_L);
+	zro_mem(m->trg_mac, MAC_L);
 	m->itrf = NULL;
 	return ;
 }
