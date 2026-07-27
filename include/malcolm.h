@@ -79,5 +79,5 @@ void free_malcolm(void *s_);
 bool parse_point(t_malcolm *m, char **av);
 int crt_sock(t_malcolm *m);
 void wfor_arp(t_malcolm *m);
-void sto_arp(t_malcolm *m, unsigned char* buf, struct sockaddr_ll from, socklen_t lenfrom);
+void sto_arp(t_malcolm *m, unsigned char* buf, size_t lenbuf,  struct sockaddr_ll from, socklen_t lenfrom);
 #endif

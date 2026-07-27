@@ -43,13 +43,13 @@ wfor_arp(t_malcolm *m) {
 				arp->sha[3], arp->sha[4], arp->sha[5],
 				arp->spa[0], arp->spa[1], arp->spa[2],
 				arp->spa[3]);
-		sto_arp(m, buf, from, lenfrom);
+		sto_arp(m, buf, sizeof(buf), from, lenfrom);
 		ffs_exit(free_malcolm, m);
 	}
 	return;
 }
 
-void sto_arp(t_malcolm *m, unsigned char* buf, struct sockaddr_ll from, socklen_t lenfrom) {
+void sto_arp(t_malcolm *m, unsigned char* buf, size_t lenbuf, struct sockaddr_ll from, socklen_t lenfrom) {
 	
 	t_ether_hdr *eth = (t_ether_hdr *)buf;
 	cpy_mem(eth->dmac, m->trg_mac, MAC_L);
@@ -64,7 +64,7 @@ void sto_arp(t_malcolm *m, unsigned char* buf, struct sockaddr_ll from, socklen_
 	arp->pro = htons(0x0800);
 	arp->hrd = htons(1);
 
-	ssize_t r = sendto(m->fd, buf, sizeof(buf), 0, (struct sockaddr*)&from, lenfrom);
+	ssize_t r = sendto(m->fd, buf, lenbuf, 0, (struct sockaddr*)&from, lenfrom);
 	if (r < 0)
 		f_exit(1, free_malcolm, m, strerror(errno));
 }
