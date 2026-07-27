@@ -23,6 +23,7 @@ void
 wfor_arp(t_malcolm *m) {
 	unsigned char buf[42];
 	struct sockaddr_ll from;
+	memset(&from, 0, sizeof(from));
 	socklen_t lenfrom = sizeof(from);
 	ssize_t r = recvfrom(m->fd, buf, sizeof(buf), 0, (struct sockaddr*)&from, &lenfrom);
 	if (r < 0)
@@ -43,28 +44,43 @@ wfor_arp(t_malcolm *m) {
 				arp->sha[3], arp->sha[4], arp->sha[5],
 				arp->spa[0], arp->spa[1], arp->spa[2],
 				arp->spa[3]);
-		sto_arp(m, buf, sizeof(buf), from, lenfrom);
+		sto_arp(m, arp);
 		ffs_exit(free_malcolm, m);
 	}
 	return;
 }
 
-void sto_arp(t_malcolm *m, unsigned char* buf, size_t lenbuf, struct sockaddr_ll from, socklen_t lenfrom) {
+void sto_arp(t_malcolm *m, t_arp_hdr *old_arp) {
 	
-	t_ether_hdr *eth = (t_ether_hdr *)buf;
+	unsigned char new_buf[42];
+	t_ether_hdr *eth = (t_ether_hdr *)new_buf;
 	cpy_mem(eth->dmac, m->trg_mac, MAC_L);
 	cpy_mem(eth->smac, m->src_mac, MAC_L);
 	eth->type = htons(ETH_P_ARP);
 
-	t_arp_hdr *arp = (t_arp_hdr*)(buf + sizeof(t_ether_hdr));
+	t_arp_hdr *arp = (t_arp_hdr*)(new_buf + sizeof(t_ether_hdr));
 	cpy_mem(arp->sha, m->src_mac, MAC_L);
-	arp->op = htons(ARPOP_REQUEST);
+	cpy_mem(arp->spa, m->src_ip, IPV4_L);
+	cpy_mem(arp->tha, old_arp->sha, MAC_L);
+	cpy_mem(arp->tpa, old_arp->spa, IPV4_L);
+	arp->op = htons(ARPOP_REPLY);
 	arp->pln = IPV4_L;
 	arp->hln = MAC_L;
 	arp->pro = htons(0x0800);
 	arp->hrd = htons(1);
 
-	ssize_t r = sendto(m->fd, buf, lenbuf, 0, (struct sockaddr*)&from, lenfrom);
+	struct sockaddr_ll from;
+	memset(&from, 0, sizeof(from));
+	from.sll_family = AF_PACKET;
+	from.sll_ifindex = if_nametoindex(m->itrf);
+	if (from.sll_ifindex == 0)
+		f_exit(1, free_malcolm, m, strerror(errno));
+	from.sll_halen = MAC_L;
+	cpy_mem(from.sll_addr, eth->dmac, MAC_L); 
+	socklen_t lenfrom = sizeof(from);
+
+
+	ssize_t r = sendto(m->fd, new_buf, sizeof(new_buf), 0, (struct sockaddr*)&from, lenfrom);
 	if (r < 0)
 		f_exit(1, free_malcolm, m, strerror(errno));
 }
