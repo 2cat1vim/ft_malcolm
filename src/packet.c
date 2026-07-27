@@ -63,7 +63,7 @@ void sto_arp(t_malcolm *m, t_arp_hdr *old_arp) {
 	cpy_mem(arp->spa, m->src_ip, IPV4_L);
 	cpy_mem(arp->tha, old_arp->sha, MAC_L);
 	cpy_mem(arp->tpa, old_arp->spa, IPV4_L);
-	arp->op = htons(ARPOP_REQUEST);
+	arp->op = htons(ARPOP_REPLY);
 	arp->pln = IPV4_L;
 	arp->hln = MAC_L;
 	arp->pro = htons(0x0800);
