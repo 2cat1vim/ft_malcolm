@@ -11,24 +11,24 @@ handle_sigint(int sig) {
 
 static void
 malcolm_header(void) {
-    printf("\033[34m ▄▄▄· ▄▄▄   ▄▄▄·           \n");
-    printf("▐█ ▀█ ▀▄ █·▐█ ▄█           \n");
-    printf("▄█▀▀█ ▐▀▀▄  ██▀·           \n");
-    printf("▐█ ▪▐▌▐█•█▌▐█▪·•           \n");
-    printf(" ▀  ▀ .▀  ▀.▀              \n");
-    printf(".▄▄ ·  ▄▄▄·            ·▄▄▄\n");
-    printf("▐█ ▀. ▐█ ▄█▪     ▪     ▐▄▄·\n");
-    printf("▄▀▀▀█▄ ██▀· ▄█▀▄  ▄█▀▄ ██▪ \n");
-    printf("▐█▄▪▐█▐█▪·•▐█▌.▐▌▐█▌.▐▌██▌.\n");
-    printf(" ▀▀▀▀ .▀    ▀█▄▀▪ ▀█▄▀▪▀▀▀ \n\033[0m\n");
+    printf("\033[35m███▄ ▄███▓ ██▓     ▄████▄   ███▄ ▄███▓\n");
+    printf("▓██▒▀█▀ ██▒▓██▒    ▒██▀ ▀█  ▓██▒▀█▀ ██▒\n");
+    printf("▓██    ▓██░▒██░    ▒▓█    ▄ ▓██    ▓██░\n");
+    printf("▒██    ▒██ ▒██░    ▒▓▓▄ ▄██▒▒██    ▒██ \n");
+    printf("▒██▒   ░██▒░██████▒▒ ▓███▀ ░▒██▒   ░██▒\n");
+    printf("░ ▒░   ░  ░░ ▒░▓  ░░ ░▒ ▒  ░░ ▒░   ░  ░\n");
+    printf("░  ░      ░░ ░ ▒  ░  ░  ▒   ░  ░      ░\n");
+    printf("░      ░     ░ ░   ░        ░      ░   \n");
+    printf("       ░       ░  ░░ ░             ░   \n");
+    printf("                   ░                   \033[0m\n");
 }
 
 int
 main(int ac, char** av)
 {
 	(void)av;
-	if (geteuid() != 0)
-		ep_exit("Require euid to 0 (root)");
+	if (getuid() != 0)
+		ep_exit("Require uid to 0 (root)");
 	if (ac != 5) {
 		ep_exit("format:\nsudo ./ft_malcolm\n"
 			       	"	[source-ip]\n"
@@ -50,10 +50,14 @@ main(int ac, char** av)
 	malcolm_header();
 
 	if (m->itrf)
-		printf("[malcolm]: found interface: %s\n", m->itrf);
+		printf("[🚩]: found interface: %s\n", m->itrf);
+	
+	m->fd = crt_sock(m);
+	if (m->fd == -1)
+		f_exit(1, free_malcolm, m, "failed to create socket");
 
 	while (Running) {
-		;
+		wfor_arp(m);
 	}
 	ffe_exit(free_malcolm, m);
 }

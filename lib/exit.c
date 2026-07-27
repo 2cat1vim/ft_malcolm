@@ -21,19 +21,23 @@ f_exit(int code, void (*f)(void*), void* s_, const char* str) {
 	exit(SUCCESS);
 }
 
-void ffe_exit(void (*f)(void*), void* s_) {
+void
+ffe_exit(void (*f)(void*), void* s_) {
 	f_exit(ERROR, f, s_, NULL);
 }
 
-void ffs_exit(void (*f)(void*), void* s_) {
+void
+ffs_exit(void (*f)(void*), void* s_) {
 	f_exit(SUCCESS, f, s_, NULL);
 }
 
-void ep_exit(const char* str) {
+void
+ep_exit(const char* str) {
 	f_exit(ERROR, NULL, NULL, str);
 }
 
-void sp_exit(const char *str) {
+void
+sp_exit(const char *str) {
 	f_exit(SUCCESS, NULL, NULL, str);
 }
 

@@ -25,4 +25,11 @@ void s_exit(void);
 // calculate len of a str, if str == NULL > return 0, else return len
 size_t s_len(const char *s);
 /* END LEN.C */
+
+/* START MEMORY.C */
+char* s_dup(const char* str);
+void* zro_mem(void* m, size_t n);
+void* cpy_mem(void* dst, const void* src, size_t n);
+int cmp_mem(const void* s1, const void* s2, size_t n);
+/* END MEMORY.C */
 #endif

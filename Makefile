@@ -6,7 +6,8 @@ LIBDIR = lib
 LIBNAME = lib.a
 SRC = src/main.c \
       src/parse.c \
-      src/init.c
+      src/init.c \
+      src/packet.c
 OBJS = $(SRC:.c=.o)
 
 all: $(NAME)

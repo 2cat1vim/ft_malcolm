@@ -5,7 +5,8 @@ AR = ar
 ARFLAGS = rcs
 
 SRC = exit.c \
-      len.c
+      len.c \
+      memory.c
 OBJS = $(SRC:.c=.o)
 
 all: $(NAME)

@@ -3,9 +3,9 @@
 void
 init_malcolm(t_malcolm *m) {
 	for (size_t i = 0; i < 2; i++)
-		memset(&m->ips[i], 0, sizeof(struct in_addr));
+		zro_mem(&m->ips[i], sizeof(struct in_addr));
 	for (size_t i = 0; i < 2; i++)
-		memset(&m->macs[i], 0, sizeof(struct ether_addr));
+		zro_mem(&m->macs[i], sizeof(struct ether_addr));
 	m->itrf = NULL;
 	return ;
 }

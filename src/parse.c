@@ -31,7 +31,7 @@ settohex(const unsigned char c) {
 static int
 mac_pton(const char* src, struct ether_addr *dst) {
 	uint8_t eth[ETH_ALEN];
-	memset(&eth, 0, sizeof(eth));
+	zro_mem(&eth, sizeof(eth));
 	size_t count = 0;
 	while (*src) {
 		eth[count] = (settohex(*src) << 4) | settohex(*(src + 1));
@@ -41,12 +41,14 @@ mac_pton(const char* src, struct ether_addr *dst) {
 				return (-1);
 			src++;
 		}
+		else if (*src != '\0')
+			return (-1);
 		count++;
 	}
 	if (count != ETH_ALEN)
 		return (-1);
 
-	memcpy(dst, eth, sizeof(eth));
+	cpy_mem(dst, eth, sizeof(eth));
 	return (1);
 }
 
@@ -75,9 +77,9 @@ resolve_ips(t_malcolm *m, char **av)
 	
         	if (ifa->ifa_addr->sa_family == AF_PACKET) {
             		struct sockaddr_ll *sll = (struct sockaddr_ll *)ifa->ifa_addr;
-            		if (memcmp(sll->sll_addr, &m->macs[SOURCE], ETH_ALEN) == 0)	
+            		if (cmp_mem(sll->sll_addr, &m->macs[SOURCE], ETH_ALEN) == 0)	
                 		match[SOURCE_MAC] = true;
-            		if (memcmp(sll->sll_addr, &m->macs[TARGET], ETH_ALEN) == 0)
+            		if (cmp_mem(sll->sll_addr, &m->macs[TARGET], ETH_ALEN) == 0)
                 		match[TARGET_MAC] = true;
 		}
 
@@ -85,7 +87,7 @@ resolve_ips(t_malcolm *m, char **av)
 
 			struct in_addr addr = ((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
 			if (addr.s_addr == m->ips[SOURCE].s_addr) {
-				m->itrf = strdup(ifa->ifa_name);
+				m->itrf = s_dup(ifa->ifa_name);
 				match[SOURCE_IP] = true;
 			}
 			if (addr.s_addr == m->ips[TARGET].s_addr)
@@ -93,11 +95,11 @@ resolve_ips(t_malcolm *m, char **av)
 		}
 	}
 
+	freeifaddrs(ifaddr);
 	for (size_t error_code = 0; error_code < 4; error_code++) {
 		if (!match[error_code])
 			return ((enum P_Answer)error_code);
 	}
-	freeifaddrs(ifaddr);
 	return (Good);
 }
 
