@@ -64,16 +64,14 @@ resolve_ips(t_malcolm *m, char **av)
 
 	if (inet_pton(AF_INET, av[SOURCE_IP + 1], &m->src_ip) != 1)
 		return (SourceIPBad);
-	if (inet_pton(AF_INET, av[TARGET_IP + 1], &m->trg_ip) != 1) {
-		match[TARGET_IP] = true;
+	if (inet_pton(AF_INET, av[TARGET_IP + 1], &m->trg_ip) != 1)
 		return (TargetIPBad);
-	}
+	match[TARGET_IP] = true;
 	if (mac_pton(av[SOURCE_MAC + 1], m->src_mac) != 1)
 		return (SourceMACBad);
-	if (mac_pton(av[TARGET_MAC + 1], m->trg_mac) != 1) {
-		match[TARGET_MAC] = true;
+	if (mac_pton(av[TARGET_MAC + 1], m->trg_mac) != 1)
 		return (TargetMACBad);
-	}
+	match[TARGET_MAC] = true;
 
 	if (getifaddrs(&ifaddr) == -1) // Create linked list of ifaddrs
 		return (NetworkBad);
