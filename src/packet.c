@@ -30,11 +30,13 @@ wfor_arp(t_malcolm *m) {
 			return (1);
 		printf("[🏷️ ]: An ARP request has been broadcast.\n"
 			"	mac address of request: %02x:%02x:%02x:%02x:%02x:%02x\n"
-			"	IP address of request: %hhu.%hhu.%hhu.%hhu\n", 
+			"	IP address of request: %hhu.%hhu.%hhu.%hhu\n"
+			"	IP adress to spoof: %hhu.%hhu.%hhu.%hhu\n",
 				arp->sha[0], arp->sha[1], arp->sha[2], 
 				arp->sha[3], arp->sha[4], arp->sha[5],
 				arp->spa[0], arp->spa[1], arp->spa[2],
-				arp->spa[3]);
+				arp->spa[3], arp->tpa[0], arp->tpa[1],
+				arp->tpa[2], arp->tpa[3]);
 		return (0);
 	}
 	return (1);
