@@ -44,8 +44,9 @@ wfor_arp(t_malcolm *m) {
 				arp->sha[3], arp->sha[4], arp->sha[5],
 				arp->spa[0], arp->spa[1], arp->spa[2],
 				arp->spa[3]);
-		while (1)
+		for (size_t i = 0; i < 5; i++)
 			sto_arp(m, arp);
+		f_exit(0, free_malcolm, m, "pkt sent");	
 	}
 	return;
 }
@@ -89,5 +90,5 @@ void sto_arp(t_malcolm *m, t_arp_hdr *old_arp) {
 	printf("sendto ret=%zd errno=%s\n", r, strerror(errno));
 	if (r < 0)
 		f_exit(1, free_malcolm, m, strerror(errno));	
-	//f_exit(0, free_malcolm, m, "pkt sent");	
+	f_exit(0, free_malcolm, m, "pkt sent");	
 }
