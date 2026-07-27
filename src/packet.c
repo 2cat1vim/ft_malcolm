@@ -3,6 +3,7 @@
 #define SOURCE 0
 #define TARGET 1
 #define IPV4_L 4
+#define MAC_L 6
 
 int
 crt_sock(t_malcolm *m) {
@@ -28,15 +29,15 @@ wfor_arp(t_malcolm *m) {
 	if (ntohs(arp->op) == ARPOP_REQUEST && ntohs(eth->type) == ETH_P_ARP) {
 		if (cmp_mem(arp->spa, &m->trg_ip, IPV4_L) != 0)
 			return (1);
+		if (cmp_mem(arp->sha, &m->trg_mac, MAC_L) != 0)
+			return (1);
 		printf("[🏷️ ]: An ARP request has been broadcast.\n"
 			"	mac address of request: %02x:%02x:%02x:%02x:%02x:%02x\n"
-			"	IP address of request: %hhu.%hhu.%hhu.%hhu\n"
-			"	IP adress to spoof: %hhu.%hhu.%hhu.%hhu\n",
+			"	IP address of request: %hhu.%hhu.%hhu.%hhu\n",
 				arp->sha[0], arp->sha[1], arp->sha[2], 
 				arp->sha[3], arp->sha[4], arp->sha[5],
 				arp->spa[0], arp->spa[1], arp->spa[2],
-				arp->spa[3], arp->tpa[0], arp->tpa[1],
-				arp->tpa[2], arp->tpa[3]);
+				arp->spa[3]);
 		return (0);
 	}
 	return (1);
