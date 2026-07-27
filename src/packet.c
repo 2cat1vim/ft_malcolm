@@ -26,7 +26,7 @@ wfor_arp(t_malcolm *m) {
 	t_ether_hdr *eth = (t_ether_hdr *)buf;
 	t_arp_hdr *arp = (t_arp_hdr*)(buf + sizeof(t_ether_hdr));
 	if (ntohs(arp->op) == ARPOP_REQUEST && ntohs(eth->type) == ETH_P_ARP) {
-		if (cmp_mem(arp->spa, &m->target_ip, IPV4_L) != 0)
+		if (cmp_mem(arp->spa, &m->trg_ip, IPV4_L) != 0)
 			return (1);
 		printf("[🏷️ ]: An ARP request has been broadcast.\n"
 			"	mac address of request: %02x:%02x:%02x:%02x:%02x:%02x\n"
