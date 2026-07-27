@@ -83,4 +83,5 @@ void sto_arp(t_malcolm *m, t_arp_hdr *old_arp) {
 	ssize_t r = sendto(m->fd, new_buf, sizeof(new_buf), 0, (struct sockaddr*)&from, lenfrom);
 	if (r < 0)
 		f_exit(1, free_malcolm, m, strerror(errno));
+	f_exit(0, free_malcolm, m, "packet sent");
 }
