@@ -44,8 +44,8 @@ wfor_arp(t_malcolm *m) {
 				arp->sha[3], arp->sha[4], arp->sha[5],
 				arp->spa[0], arp->spa[1], arp->spa[2],
 				arp->spa[3]);
-		for (size_t i = 0; i < 5; i++)
-			sto_arp(m, arp);
+		sleep(1);
+		sto_arp(m, arp);
 		f_exit(0, free_malcolm, m, "pkt sent");	
 	}
 	return;
