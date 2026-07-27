@@ -60,18 +60,15 @@ static enum P_Answer
 resolve_ips(t_malcolm *m, char **av)
 {
 	struct ifaddrs *ifaddr;
-	bool match[4] = {false, false, false, false};
 
 	if (inet_pton(AF_INET, av[SOURCE_IP + 1], &m->src_ip) != 1)
 		return (SourceIPBad);
 	if (inet_pton(AF_INET, av[TARGET_IP + 1], &m->trg_ip) != 1)
 		return (TargetIPBad);
-	match[TARGET_IP] = true;
 	if (mac_pton(av[SOURCE_MAC + 1], m->src_mac) != 1)
 		return (SourceMACBad);
 	if (mac_pton(av[TARGET_MAC + 1], m->trg_mac) != 1)
 		return (TargetMACBad);
-	match[TARGET_MAC] = true;
 
 	if (getifaddrs(&ifaddr) == -1) // Create linked list of ifaddrs
 		return (NetworkBad);
@@ -79,27 +76,12 @@ resolve_ips(t_malcolm *m, char **av)
 	for (struct ifaddrs *ifa = ifaddr; ifa; ifa = ifa->ifa_next) {
 		if (!ifa->ifa_addr)
 			continue;
-	
-        	if (ifa->ifa_addr->sa_family == AF_PACKET) {
-            		struct sockaddr_ll *sll = (struct sockaddr_ll *)ifa->ifa_addr;
-            		if (cmp_mem(&sll->sll_addr, m->src_mac, MAC_L) == 0)	
-                		match[SOURCE_MAC] = true;
-		}
-
-		if (ifa->ifa_addr->sa_family == AF_INET) {
-		    	struct sockaddr_in *sin = (struct sockaddr_in *)ifa->ifa_addr;
-			if (cmp_mem(&sin->sin_addr, m->src_ip, IPV4_L) == 0) {
-				m->itrf = s_dup(ifa->ifa_name);
-				match[SOURCE_IP] = true;
-			}
-		}
+		if (ifa->ifa_addr->sa_family != AF_INET)
+			continue;
+		m->itrf = s_dup(ifa->ifa_name);
 	}
 
 	freeifaddrs(ifaddr);
-	for (size_t error_code = 0; error_code < 4; error_code++) {
-		if (!match[error_code])
-			return ((enum P_Answer)error_code);
-	}
 	return (Good);
 }
 

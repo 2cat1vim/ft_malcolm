@@ -49,8 +49,9 @@ main(int ac, char** av)
 
 	malcolm_header();
 
-	if (m->itrf)
-		printf("[🚩]: found interface: %s\n", m->itrf);
+	if (!m->itrf) 
+		f_exit(1, free_malcolm, m, "[❗]: no interface found");
+	printf("[🚩]: found interface: %s\n", m->itrf);
 	
 	m->fd = crt_sock(m);
 	if (m->fd == -1)
