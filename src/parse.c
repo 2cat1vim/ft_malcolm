@@ -6,7 +6,7 @@
 /*   By: ltrillar <ltrillar@student.42luxembou      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 16:14:00 by ltrillar          #+#    #+#             */
-/*   Updated: 2026/07/28 16:14:03 by ltrillar         ###   ########.fr       */
+/*   Updated: 2026/07/28 23:28:25 by ltrillar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,17 +21,6 @@ enum P_Answer {
 	Good
 };
 
-#define SOURCE_IP 0
-#define SOURCE_MAC 1
-#define TARGET_IP 2
-#define TARGET_MAC 3
-
-#define SOURCE 0
-#define TARGET 1
-
-#define IPV4_L 4
-#define MAC_L 6
-
 static int
 settohex(const unsigned char c) {
     if (c >= '0' && c <= '9') 
@@ -40,7 +29,7 @@ settohex(const unsigned char c) {
 	    return (c - 'A' + 10);
     if (c >= 'a' && c <= 'f')
 	    return (c - 'a' + 10);
-    return (-1);
+    return (ERR);
 }
 
 static int
@@ -57,11 +46,11 @@ mac_pton(const char* src, uint8_t *dst) {
 			src++;
 		}
 		else if (*src != '\0')
-			return (-1);
+			return (ERR);
 		count++;
 	}
 	if (count != ETH_ALEN)
-		return (-1);
+		return (ERR);
 
 	cpy_mem(dst, eth, MAC_L);
 	return (1);
@@ -82,7 +71,7 @@ resolve_ips(t_malcolm *m, char **av)
 	if (mac_pton(av[TARGET_MAC + 1], m->trg_mac) != 1)
 		return (TargetMACBad);
 
-	if (getifaddrs(&ifaddr) == -1) // Create linked list of ifaddrs
+	if (getifaddrs(&ifaddr) == ERR)
 		return (NetworkBad);
 
 	for (struct ifaddrs *ifa = ifaddr; ifa; ifa = ifa->ifa_next) {

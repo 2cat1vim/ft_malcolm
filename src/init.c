@@ -6,7 +6,7 @@
 /*   By: ltrillar <ltrillar@student.42luxembou      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 16:13:55 by ltrillar          #+#    #+#             */
-/*   Updated: 2026/07/28 16:13:56 by ltrillar         ###   ########.fr       */
+/*   Updated: 2026/07/28 23:36:01 by ltrillar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ init_malcolm(t_malcolm *m) {
 	zro_mem(m->src_mac, MAC_L);
 	zro_mem(m->trg_mac, MAC_L);
 	m->itrf = NULL;
-	m->fd = -1;
+	m->fd = ERR;
 	return ;
 }
 
@@ -34,7 +34,7 @@ free_malcolm(void *s_) {
 	if (m) {
 		if (m->itrf)
 			free(m->itrf);
-		if (m->fd != -1)
+		if (m->fd != ERR)
 			close(m->fd);
 		free(m);
 	}

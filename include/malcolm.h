@@ -6,7 +6,7 @@
 /*   By: ltrillar <ltrillar@student.42luxembou      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 16:14:14 by ltrillar          #+#    #+#             */
-/*   Updated: 2026/07/28 16:14:17 by ltrillar         ###   ########.fr       */
+/*   Updated: 2026/07/28 23:57:03 by ltrillar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,19 @@
 #include <net/if_arp.h>
 
 #include "../lib/lib.h"
+
+#define SOURCE_IP 0
+#define SOURCE_MAC 1
+#define TARGET_IP 2
+#define TARGET_MAC 3
+#define SOURCE 0
+#define TARGET 1
+#define IPV4_L 4
+#define MAC_L 6
+#define ERR -1
+#define BAD 1
+#define GOOD 0
+#define ARP_PKT 42
 
 typedef struct s_malcolm {
 	int fd;
@@ -90,6 +103,6 @@ void init_malcolm(t_malcolm *m);
 void free_malcolm(void *s_);
 bool parse_point(t_malcolm *m, char **av);
 int crt_sock(t_malcolm *m);
-void wfor_arp(t_malcolm *m);
-void sto_arp(t_malcolm *m, t_arp_hdr *old_arp);
+int wfor_arp(t_malcolm *m, t_arp_hdr *arp);
+int sto_arp(t_malcolm *m, t_arp_hdr *old_arp);
 #endif

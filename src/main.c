@@ -6,19 +6,19 @@
 /*   By: ltrillar <ltrillar@student.42luxembou      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 16:13:28 by ltrillar          #+#    #+#             */
-/*   Updated: 2026/07/28 16:13:40 by ltrillar         ###   ########.fr       */
+/*   Updated: 2026/07/28 23:59:50 by ltrillar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/malcolm.h"
 
-static volatile int Running = 1;
+static volatile bool stop = false;
 
 void
 handle_sigint(int sig) {
 	(void)sig;
 	printf("\n");
-	Running = 0;
+	stop = true;
 }
 
 static void
@@ -61,15 +61,23 @@ main(int ac, char** av) {
 	malcolm_header();
 
 	if (!m->itrf) 
-		f_exit(1, free_malcolm, m, "[❗]: no interface found");
+		f_exit(BAD, free_malcolm, m, "[❗]: no interface found");
 	printf("[🚩]: found interface: %s\n", m->itrf);
 	
 	m->fd = crt_sock(m);
 	if (m->fd == -1)
-		f_exit(1, free_malcolm, m, "failed to create socket");
+		f_exit(BAD, free_malcolm, m, "failed to create socket");
 
-	while (Running)
-		wfor_arp(m);
-
+	while (!stop) {
+		t_arp_hdr *arp = NULL;
+		int r = wfor_arp(m, arp);
+		if (r == -1)
+			f_exit(BAD, free_malcolm, m, strerror(errno));
+		if (r == 1)
+			continue;
+		if (sto_arp(m, arp) == -1)
+			f_exit(BAD, free_malcolm, m, strerror(errno));
+		break;
+	}
 	ffe_exit(free_malcolm, m);
 }
