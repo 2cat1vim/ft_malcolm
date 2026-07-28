@@ -58,5 +58,6 @@ main(int ac, char** av) {
 
 	while (Running)
 		wfor_arp(m);
+
 	ffe_exit(free_malcolm, m);
 }

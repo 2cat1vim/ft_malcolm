@@ -1,3 +1,0 @@
-arp -a
-arp -d
-sudo tcpdump -ennvvXSs 1514 -i enp0s3 arp

