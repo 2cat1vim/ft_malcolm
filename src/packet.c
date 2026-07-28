@@ -6,7 +6,7 @@
 /*   By: ltrillar <ltrillar@student.42luxembou      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 16:13:44 by ltrillar          #+#    #+#             */
-/*   Updated: 2026/07/28 23:58:45 by ltrillar         ###   ########.fr       */
+/*   Updated: 2026/07/29 00:29:03 by ltrillar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ crt_sock(t_malcolm *m) {
 }
 
 int
-wfor_arp(t_malcolm *m, t_arp_hdr *arp) {
-	uint8_t pkt[ARP_PKT];
+wfor_arp(t_malcolm *m, t_arp_hdr **o_arp) {
+	uint8_t pkt[ARP_PKT] = {0};
 	struct sockaddr_ll from;
 	zro_mem(&from, sizeof(from));
 	socklen_t lenfrom = sizeof(from);
@@ -33,7 +33,7 @@ wfor_arp(t_malcolm *m, t_arp_hdr *arp) {
 	if (r < 0)
 		return (-1);
 	t_ether_hdr *eth = (t_ether_hdr *)pkt;
-	arp = (t_arp_hdr*)(pkt + sizeof(t_ether_hdr));
+	t_arp_hdr *arp = (t_arp_hdr*)(pkt + sizeof(t_ether_hdr));
 	if (ntohs(arp->op) == ARPOP_REQUEST && ntohs(eth->type) == ETH_P_ARP) {
 		if (cmp_mem(arp->spa, &m->trg_ip, IPV4_L) != GOOD)
 			return (1);
@@ -48,11 +48,10 @@ wfor_arp(t_malcolm *m, t_arp_hdr *arp) {
 				arp->sha[3], arp->sha[4], arp->sha[5],
 				arp->spa[0], arp->spa[1], arp->spa[2],
 				arp->spa[3]);
-		return (0);
 		printf("Now sending an ARP reply to the target address with spoofed source, please wait..\n");
 		sleep(1);
-		sto_arp(m, arp);
-		f_exit(GOOD, free_malcolm, m, "Sent an ARP reply packet, you may now check the arp table on the target.\nExiting program...");	
+		*o_arp = arp;
+		return (0);
 	}
 	return (1);
 }
@@ -89,7 +88,7 @@ build_dst(t_malcolm* m, struct sockaddr_ll* dst, socklen_t* dstlen) {
 }
 
 int sto_arp(t_malcolm *m, t_arp_hdr *old_arp) {
-	uint8_t rep_pkt[ARP_PKT];
+	uint8_t rep_pkt[ARP_PKT] = {0};
 	struct sockaddr_ll dst;
 	socklen_t dstlen;
 

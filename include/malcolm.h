@@ -6,7 +6,7 @@
 /*   By: ltrillar <ltrillar@student.42luxembou      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 16:14:14 by ltrillar          #+#    #+#             */
-/*   Updated: 2026/07/28 23:57:03 by ltrillar         ###   ########.fr       */
+/*   Updated: 2026/07/29 00:15:16 by ltrillar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,6 @@ void init_malcolm(t_malcolm *m);
 void free_malcolm(void *s_);
 bool parse_point(t_malcolm *m, char **av);
 int crt_sock(t_malcolm *m);
-int wfor_arp(t_malcolm *m, t_arp_hdr *arp);
+int wfor_arp(t_malcolm *m, t_arp_hdr **o_arp);
 int sto_arp(t_malcolm *m, t_arp_hdr *old_arp);
 #endif

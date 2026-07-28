@@ -6,7 +6,7 @@
 /*   By: ltrillar <ltrillar@student.42luxembou      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 16:14:00 by ltrillar          #+#    #+#             */
-/*   Updated: 2026/07/28 23:28:25 by ltrillar         ###   ########.fr       */
+/*   Updated: 2026/07/29 00:10:04 by ltrillar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ resolve_ips(t_malcolm *m, char **av)
 			continue;
 		if (ifa->ifa_addr->sa_family != AF_INET)
 			continue;
+		free(m->itrf);
 		m->itrf = s_dup(ifa->ifa_name);
 	}
 

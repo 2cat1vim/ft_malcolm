@@ -6,7 +6,7 @@
 /*   By: ltrillar <ltrillar@student.42luxembou      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 16:13:28 by ltrillar          #+#    #+#             */
-/*   Updated: 2026/07/28 23:59:50 by ltrillar         ###   ########.fr       */
+/*   Updated: 2026/07/29 00:31:21 by ltrillar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,11 @@ main(int ac, char** av) {
 			       	"	[target-mac-addr]\n\n[!]: it must be in this exact order");
 	}
 
-	signal(SIGINT, handle_sigint);
+	struct sigaction s;
+	s.sa_handler = handle_sigint;
+	zro_mem(&s.sa_mask, sizeof(s.sa_mask));
+	s.sa_flags = 0;
+	sigaction(SIGINT, &s, NULL);
 
 	t_malcolm *m = malloc((sizeof(t_malcolm) * 1));
 	if (!m)
@@ -70,7 +74,7 @@ main(int ac, char** av) {
 
 	while (!stop) {
 		t_arp_hdr *arp = NULL;
-		int r = wfor_arp(m, arp);
+		int r = wfor_arp(m, &arp);
 		if (r == -1)
 			f_exit(BAD, free_malcolm, m, strerror(errno));
 		if (r == 1)
@@ -79,5 +83,6 @@ main(int ac, char** av) {
 			f_exit(BAD, free_malcolm, m, strerror(errno));
 		break;
 	}
+	f_exit(GOOD, free_malcolm, m, "Sent an ARP reply packet, you may now check the arp table on the target.\nExiting program...");	
 	ffe_exit(free_malcolm, m);
 }
