@@ -6,7 +6,7 @@
 /*   By: ltrillar <ltrillar@student.42luxembou      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 16:13:28 by ltrillar          #+#    #+#             */
-/*   Updated: 2026/07/29 00:31:21 by ltrillar         ###   ########.fr       */
+/*   Updated: 2026/07/29 12:58:53 by ltrillar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ main(int ac, char** av) {
 
 	if (!m->itrf) 
 		f_exit(BAD, free_malcolm, m, "[❗]: no interface found");
-	printf("[🚩]: found interface: %s\n", m->itrf);
+	printf("found interface: %s\n", m->itrf);
 	
 	m->fd = crt_sock(m);
 	if (m->fd == -1)

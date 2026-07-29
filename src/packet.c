@@ -6,7 +6,7 @@
 /*   By: ltrillar <ltrillar@student.42luxembou      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/07/28 16:13:44 by ltrillar          #+#    #+#             */
-/*   Updated: 2026/07/29 00:29:03 by ltrillar         ###   ########.fr       */
+/*   Updated: 2026/07/29 12:58:33 by ltrillar         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ wfor_arp(t_malcolm *m, t_arp_hdr **o_arp) {
 			return (1);
 		if (cmp_mem(arp->tpa, &m->src_ip, IPV4_L) != GOOD)
 			return (1);
-		printf("[🏷️ ]: An ARP request has been broadcast.\n"
+		printf("An ARP request has been broadcast.\n"
 			"	MAC address of request: %02x:%02x:%02x:%02x:%02x:%02x\n"
 			"	IP address of request: %hhu.%hhu.%hhu.%hhu\n",
 				arp->sha[0], arp->sha[1], arp->sha[2], 
